@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 
-class NewTransaction extends StatelessWidget {
-  final titleController = TextEditingController();
-  final amountController = TextEditingController();
+class NewTransaction extends StatefulWidget {
   final Function newTXHandler;
   NewTransaction({required this.newTXHandler});
+
+  @override
+  State<NewTransaction> createState() => _NewTransactionState();
+}
+
+class _NewTransactionState extends State<NewTransaction> {
+  final titleController = TextEditingController();
+
+  final amountController = TextEditingController();
 
   void submitData() {
     final enteredTitle = titleController.text;
@@ -12,7 +19,8 @@ class NewTransaction extends StatelessWidget {
     if (enteredTitle.isEmpty || enteredAmount <= 0) {
       return;
     }
-    newTXHandler(enteredTitle, enteredAmount);
+    widget.newTXHandler(enteredTitle, enteredAmount);
+    Navigator.of(context).pop();
   }
 
   @override
@@ -25,7 +33,7 @@ class NewTransaction extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: "Title",
                 ),
                 // onChanged: (value) {
@@ -35,7 +43,7 @@ class NewTransaction extends StatelessWidget {
                 controller: titleController,
               ),
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: "Amount",
                 ),
                 controller: amountController,
@@ -45,8 +53,23 @@ class NewTransaction extends StatelessWidget {
                 //   amountInput = value;
                 // },
               ),
-              FlatButton(
-                textColor: Colors.purple,
+              Container(
+                height: 70,
+                child: Row(children: [
+                  Text("No Date Choosen"),
+                  FlatButton(
+                    onPressed: () {},
+                    child: Text(
+                      "Choose Date",
+                      style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).primaryColor),
+                    ),
+                  )
+                ]),
+              ),
+              RaisedButton(
+                color: Theme.of(context).primaryColor,
                 onPressed: submitData,
                 child: Text("Add Transaction"),
               )
