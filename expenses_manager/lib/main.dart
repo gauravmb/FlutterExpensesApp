@@ -1,11 +1,18 @@
+import 'dart:io';
 import 'package:expenses_manager/widgets/new_transaction.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'models/transaction.dart';
-import './widgets/user_transaction.dart';
 import './widgets/transaction_list.dart';
 import './widgets/chart.dart';
+import 'package:flutter/cupertino.dart';
 
 void main() {
+  // WidgetsFlutterBinding.ensureInitialized();
+  // SystemChrome.setPreferredOrientations([
+  //   DeviceOrientation.portraitUp,
+  //   DeviceOrientation.portraitDown,
+  // ]);
   runApp(const MyApp());
 }
 
@@ -60,6 +67,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   final List<Transaction> _userTransaction = [];
+  bool showChart = false;
 
   List<Transaction> get _recentTransactions {
     return _userTransaction.where((tx) {
@@ -102,43 +110,102 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final isLandscape =
+        MediaQuery.of(context).orientation == Orientation.landscape;
+    final PreferredSizeWidget appBar = Platform.isIOS
+        ? CupertinoNavigationBar(
+            middle: Text("Personal Expences"),
+            trailing: GestureDetector(
+              child: Icon(CupertinoIcons.add),
+              onTap: () => _startNewTransaction(context),
+            ),
+          )
+        : AppBar(
+            // Here we take the value from the MyHomePage object that was created by
+            // the App.build method, and use it to set our appbar title.
+            title: Text(widget.title),
+            actions: [
+              IconButton(
+                  onPressed: () => _startNewTransaction(context),
+                  icon: Icon(Icons.add))
+            ],
+          ) as PreferredSizeWidget;
+    final mediaQuery = MediaQuery.of(context);
     // This method is rerun every time setState is called, for instance as done
     // by the _incrementCounter method above.
     //
-    // The Flutter framework has been optimized to make rerunning build methods
+    // The Flutter framework has been optimized to make rerunning build methodsxs
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-        actions: [
-          IconButton(
-              onPressed: () => _startNewTransaction(context),
-              icon: Icon(Icons.add))
-        ],
+
+    final txListTransaction = Container(
+      height: (mediaQuery.size.height -
+              appBar.preferredSize.height -
+              mediaQuery.padding.top) *
+          0.7,
+      child: TransationList(
+        transactions: _userTransaction,
+        deleteHandler: deleteTransaction,
       ),
-      body: Column(
+    );
+
+    final txChart = Container(
+      height: (mediaQuery.size.height -
+              appBar.preferredSize.height -
+              mediaQuery.padding.top) *
+          (isLandscape ? 0.7 : 0.3),
+      child: Chart(
+        recentTransactions: _recentTransactions,
+      ),
+    );
+
+    final pageBody = SafeArea(
+        child: SingleChildScrollView(
+      child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Container(
-            child: Chart(
-              recentTransactions: _recentTransactions,
+          if (isLandscape)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  "Show Chart",
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                Switch.adaptive(
+                  value: showChart,
+                  onChanged: (value) {
+                    setState(() {
+                      showChart = value;
+                    });
+                  },
+                ),
+              ],
             ),
-          ),
-          TransationList(
-            transactions: _userTransaction,
-            deleteHandler: deleteTransaction,
-          ),
+          if (isLandscape) showChart ? txChart : txListTransaction,
+          if (!isLandscape) txChart,
+          if (!isLandscape) txListTransaction,
         ],
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
-      floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.add),
-        onPressed: () => _startNewTransaction(context),
-      ),
-    );
+    ));
+
+    return Platform.isIOS
+        ? CupertinoPageScaffold(
+            child: pageBody,
+            navigationBar: appBar as ObstructingPreferredSizeWidget,
+          )
+        : Scaffold(
+            appBar: appBar,
+            body: pageBody,
+            floatingActionButtonLocation:
+                FloatingActionButtonLocation.centerFloat,
+            floatingActionButton: Platform.isIOS
+                ? Container()
+                : FloatingActionButton(
+                    child: Icon(Icons.add),
+                    onPressed: () => _startNewTransaction(context),
+                  ),
+          );
   }
 }
