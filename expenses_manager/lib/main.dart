@@ -110,6 +110,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    print("Build for My Home Page State ");
+
     final isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
     final PreferredSizeWidget appBar = Platform.isIOS
@@ -155,7 +157,7 @@ class _MyHomePageState extends State<MyHomePage> {
               mediaQuery.padding.top) *
           (isLandscape ? 0.7 : 0.3),
       child: Chart(
-        recentTransactions: _recentTransactions,
+        _recentTransactions,
       ),
     );
 

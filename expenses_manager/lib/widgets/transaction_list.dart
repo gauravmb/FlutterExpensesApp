@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/transaction.dart';
-import 'package:intl/intl.dart';
+import './transaction_item.dart';
 
 class TransationList extends StatelessWidget {
   final List<Transaction> transactions;
@@ -10,6 +10,8 @@ class TransationList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    print("Build for TransationList ");
+
     return LayoutBuilder(builder: (context, constraints) {
       return transactions.isEmpty
           ? Column(
@@ -39,38 +41,9 @@ class TransationList extends StatelessWidget {
           : ListView.builder(
               itemCount: transactions.length,
               itemBuilder: (ctx, index) {
-                return Card(
-                    elevation: 5,
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        radius: 30,
-                        child: Padding(
-                            padding: EdgeInsets.all(10),
-                            child: FittedBox(
-                                child: Text(
-                                    '\$${transactions[index].amount.toString()}'))),
-                      ),
-                      title: Text(transactions[index].title),
-                      subtitle: Text(DateFormat.yMMMd().format(
-                        transactions[index].date,
-                      )),
-                      trailing: MediaQuery.of(context).size.width >= 460
-                          ? FlatButton.icon(
-                              onPressed: () {
-                                deleteHandler(transactions[index].id);
-                              },
-                              color: Theme.of(context).errorColor,
-                              icon: Icon(Icons.delete),
-                              label: Text("Delete"),
-                            )
-                          : IconButton(
-                              icon: Icon(Icons.delete),
-                              color: Theme.of(context).errorColor,
-                              onPressed: () {
-                                deleteHandler(transactions[index].id);
-                              },
-                            ),
-                    ));
+                return TransactionItem(
+                    transaction: transactions[index],
+                    deleteHandler: deleteHandler);
               });
     });
   }
